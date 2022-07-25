@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+option go_package = "pkg/api/v2/function";
+
+package functions;
+
+// support data types
+enum DataType{
+    Int8 = 0;
+    UInt8 = 1;
+    
+    Int16 = 2;
+    UInt16 = 3;
+
+    Int32 = 4;
+    UInt32 = 5;
+
+    Int = 6;
+    UInt = 7;
+
+    Int64 = 8;
+    UInt64 = 9;
+
+    Float = 10;
+    Double = 11;
+
+	String = 12;
+    Bytes = 13;
+
+    Bool = 14;
+    IntegerBool = 15;
+
+    Datatime = 16;
+}
+
+// drop is the data running in the ruleengine
+// there are three types of drop, device drop, audio drop and image drop
+// device drop contains the device data from devices, such as modbus device, opc device and other devices
+// audio drop contains audio frames
+// image drop contains vedio 
+message Drop {
+    oneof drop {
+        DeviceDrop deviceDrop = 1;
+        AudioDrop audioDrop = 2;
+        ImageDrop imageDrop = 3;
+    }
+    int64     timestamp = 4;
+    bool      continue = 5;
+}
+
+message Properties {
+    DataType datatype = 1;
+    repeated string properties = 2;
+}
+
+message DeviceDropItem {
+    string deviceID = 1;
+    // key can be module.property or single property
+    map<string,Properties> properties = 2;
+}
+
+message DeviceDrop {
+    repeated DeviceDropItem items = 1;
+}
+
+message AudioDrop {
+    bytes audio = 1;
+    int32 sampleRate = 2;
+}
+
+message Image {
+    enum ImageFormat {
+        RGB888 = 0;
+        RGB565 = 1;
+        RGB555 = 2;
+        YUV420 = 3;
+        YUV422 = 4;
+        YUV444 = 5;
+    }
+
+    ImageFormat format = 1;
+    int32 width = 2;
+    int32 height = 3;
+    bytes data = 4;
+}
+
+message ImageDrop {
+    repeated Image image = 1;
+}
+
+message ObjectCondition {
+    string objectID = 1;
+    repeated string property = 2;
+    string aggregate = 3;
+    string rawSQL = 4;
+}
+
+message GeneratorRequest {
+    int64 start = 1;
+    int64 end = 2;
+    int64 interval = 3;
+    repeated ObjectCondition objectConditions = 4;
+}
+
+message ProbeRequest {
+    repeated string objects = 1;
+}
+
+message ObjectItem {
+    string name = 1;
+    DataType datatype = 2;
+}
+
+message ObjectDefination {
+    string objectID = 1;
+    repeated ObjectItem items = 2;
+}
+
+message ProbeResponse {
+    repeated ObjectDefination objects = 1;
+}
+
+service Generator {
+    // generator function
+    rpc QueryData(GeneratorRequest) returns (Drop) {}
+    // generator function
+    rpc SubscribeData(GeneratorRequest) returns (stream Drop) {}
+    // generator function
+    rpc Probe(ProbeRequest) returns (ProbeResponse) {}
+}
+
+/*
+The function plugin is a grpc server and iotedge is the grpc client.
+Function plugin can be divided into two types: generator and processor.
+
+1) the generator function is a plugin that can generate data
+2) the processor function is a plugin that can process data
+*/ 
+
+service Processor {
+    // processor functions
+    rpc ProcessDataOnce (Drop) returns (Drop) {}
+    // processor functions
+    rpc ProcessDataStream (stream Drop) returns (stream Drop) {}
+}
