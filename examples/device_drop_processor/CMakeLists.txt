@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(generator)
+project(device_drop_processor)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src generator_srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(generator 
+add_executable(device_drop_processor 
     ${generator_srcs}
 )
 
-target_link_libraries(generator 
+target_link_libraries(device_drop_processor 
     function
 )
