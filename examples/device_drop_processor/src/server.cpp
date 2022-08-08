@@ -9,8 +9,8 @@
 #include <string.h>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include <util.h>
+#include <vector>
 
 DeviceDropProcessor::DeviceDropProcessor() : port(8080) {}
 
@@ -29,7 +29,7 @@ int DeviceDropProcessor::Start() {
     exit(-1);
   }
 
-  std::cout << "running" << std::endl;
+  std::cout << "running on " << this->port << std::endl;
   server->Wait();
   return 0;
 }
