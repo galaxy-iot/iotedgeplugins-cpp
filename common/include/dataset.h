@@ -12,25 +12,25 @@ public:
   std::vector<std::string> properties;
 };
 
-class DeviceDropItem {
+class DeviceDataSetItem {
 public:
   std::string deviceId;
   std::unordered_map<std::string, Properties> properties;
 };
 
-class DeviceDrop {
+class DeviceDataSet {
 public:
-  std::vector<DeviceDropItem> items;
+  std::vector<DeviceDataSetItem> items;
 
-  functions::DeviceDrop *ToFunctionDeviceDrop() {
-    functions::DeviceDrop *drop = new functions::DeviceDrop;
-    auto mutable_items = drop->mutable_items();
+  functions::DeviceDataSet *ToFunctionDeviceDrop() {
+    functions::DeviceDataSet *ds = new functions::DeviceDataSet;
+    auto mutable_items = ds->mutable_items();
 
     for (auto it = items.begin(); it != items.end(); it++) {
       std::string deviceId = it->deviceId;
       std::unordered_map<std::string, Properties> propertyMap = it->properties;
 
-      functions::DeviceDropItem *item = new functions::DeviceDropItem;
+      functions::DeviceDataSetItem *item = new functions::DeviceDataSetItem;
       auto properties = item->mutable_properties();
       item->set_deviceid(deviceId);
 
@@ -59,7 +59,7 @@ public:
       mutable_items->AddAllocated(item);
     }
 
-    return drop;
+    return ds;
   }
 };
 

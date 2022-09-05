@@ -27,15 +27,11 @@ public:
 
   grpc::Status QueryData(grpc::ServerContext *context,
                          const functions::GeneratorRequest *request,
-                         functions::Drop *response);
+                         functions::DataSet *response);
 
   grpc::Status SubscribeData(grpc::ServerContext *context,
                              const functions::GeneratorRequest *request,
-                             grpc::ServerWriter<::functions::Drop> *writer);
-  // generator function
-  grpc::Status Probe(grpc::ServerContext *context,
-                     const functions::ProbeRequest *request,
-                     functions::ProbeResponse *response);
+                             grpc::ServerWriter<::functions::DataSet> *writer);
 };
 
 #endif

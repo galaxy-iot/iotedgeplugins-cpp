@@ -9,17 +9,17 @@
 #include <unordered_map>
 #include <vector>
 
-class DeviceDataSetProcessor : public functions::Processor::Service {
+class DeviceEventProcessor : public functions::Processor::Service {
 private:
   int port;
 
 public:
   // create a grpc server with port 8080
-  DeviceDataSetProcessor();
+  DeviceEventProcessor();
   // create a grpc server with given port
-  DeviceDataSetProcessor(int port);
+  DeviceEventProcessor(int port);
   // deconstruct function
-  ~DeviceDataSetProcessor();
+  ~DeviceEventProcessor();
   // make this server running
   int Start();
   // stop this server

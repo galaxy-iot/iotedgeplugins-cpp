@@ -22,3 +22,4 @@ include_directories(${CMAKE_SOURCE_DIR}/common/include)
 
 add_subdirectory(./examples/generator)
 add_subdirectory(./examples/device_drop_processor)
+add_subdirectory(./examples/device_event_processor)

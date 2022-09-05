@@ -1,5 +1,5 @@
 #include "server.h"
-#include "drop.h"
+#include "dataset.h"
 #include "functions.pb.h"
 #include "util.h"
 #include <grpcpp/grpcpp.h>
@@ -36,9 +36,9 @@ Server::~Server() {}
 
 void Server::stop() {}
 
-static functions::DeviceDrop *generatro_device_drop() {
-  DeviceDrop device_drop = DeviceDrop{};
-  DeviceDropItem device_drop_item = DeviceDropItem{
+static functions::DeviceDataSet *generatro_device_drop() {
+  DeviceDataSet device_ds = DeviceDataSet{};
+  DeviceDataSetItem device_ds_item = DeviceDataSetItem{
       .deviceId = "test-deviceid",
       .properties = std::unordered_map<std::string, Properties>()};
 
@@ -48,54 +48,45 @@ static functions::DeviceDrop *generatro_device_drop() {
     propertys.push_back(std::to_string(get_random(0, 100)));
   }
 
-  device_drop_item.properties.insert(
+  device_ds_item.properties.insert(
       std::map<std::basic_string<char>, Properties>::value_type(
           "p1",
           Properties{.dataType = functions::Int, .properties = propertys}));
 
-  device_drop.items = std::vector<DeviceDropItem>();
-  device_drop.items.push_back(device_drop_item);
+  device_ds.items = std::vector<DeviceDataSetItem>();
+  device_ds.items.push_back(device_ds_item);
 
-  functions::DeviceDrop *drop = device_drop.ToFunctionDeviceDrop();
+  functions::DeviceDataSet *drop = device_ds.ToFunctionDeviceDrop();
   return drop;
 }
 
 grpc::Status Server::QueryData(grpc::ServerContext *context,
                                const functions::GeneratorRequest *request,
-                               functions::Drop *response) {
+                               functions::DataSet *response) {
   long ts = get_ms_timestamp();
   response->set_timestamp(ts);
 
-  functions::DeviceDrop *drop = generatro_device_drop();
-  response->set_allocated_devicedrop(drop);
-
+  functions::DeviceDataSet *ds = generatro_device_drop();
+  response->set_allocated_devicedataset(ds);
   return grpc::Status::OK;
 }
 
 grpc::Status
 Server::SubscribeData(grpc::ServerContext *context,
                       const functions::GeneratorRequest *request,
-                      grpc::ServerWriter<functions::Drop> *writer) {
-  functions::Drop drop;
+                      grpc::ServerWriter<functions::DataSet> *writer) {
+  functions::DataSet ds;
 
   while (true) {
     long ts = get_ms_timestamp();
-    drop.set_timestamp(ts);
-    functions::DeviceDrop *device_drop = generatro_device_drop();
+    ds.set_timestamp(ts);
+    functions::DeviceDataSet *device_data_set = generatro_device_drop();
 
-    drop.set_allocated_devicedrop(device_drop);
+    ds.set_allocated_devicedataset(device_data_set);
 
-    writer->Write(drop);
+    writer->Write(ds);
     sleep(1);
   }
 
-  return grpc::Status::OK;
-}
-
-// generator function
-grpc::Status Server::Probe(grpc::ServerContext *context,
-                           const functions::ProbeRequest *request,
-                           functions::ProbeResponse *response) {
-  std::cout << "probe" << std::endl;
   return grpc::Status::OK;
 }

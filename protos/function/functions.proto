@@ -33,19 +33,48 @@ enum DataType{
     Datatime = 16;
 }
 
-// drop is the data running in the ruleengine
-// there are three types of drop, device drop, audio drop and image drop
-// device drop contains the device data from devices, such as modbus device, opc device and other devices
-// audio drop contains audio frames
-// image drop contains vedio 
-message Drop {
-    oneof drop {
-        DeviceDrop deviceDrop = 1;
-        AudioDrop audioDrop = 2;
-        ImageDrop imageDrop = 3;
+// event level
+enum EventLevel {
+    Info = 0;
+    Error = 1;
+    Alarm = 2;
+}
+
+// the defination of report event
+message Event {
+    string DeviceID = 1;
+    string DeviceServiceName = 2;
+    string DeviceEventName = 3;
+    string Value = 4;
+    EventLevel EventType = 5;
+    int64 Timestamp = 6;
+}
+
+// multiple report events
+message EventDataSet {
+    repeated Event ReportEvents = 1;
+}
+
+// dataset is the data running in the ruleengine
+// there are three types of dataset, device dataset, audio dataset, image dataset and event dataset
+// device dataset contains the device data from devices, such as modbus device, opc device and other devices
+// audio dataset contains audio frames
+// image dataset contains vedio frames
+// event dataset contains events reported from devices
+// raw dataset is a byte array
+message DataSet {
+    oneof DataSet {
+        DeviceDataSet deviceDataSet = 1;
+        AudioDataSet audioDataSet = 2;
+        ImageDataSet imageDataSet = 3;
+        EventDataSet eventDataSet = 4;
+        bytes rawDataSet = 5;
     }
-    int64     timestamp = 4;
-    bool      continue = 5;
+    int64     timestamp = 6;
+    // if ok is equals true, this data set is valid, otherwise, 
+    // this data isn't valid and error message is set to filed 'errorMessage'
+    bool      ok = 7;
+    string    errorMessage = 8;
 }
 
 message Properties {
@@ -53,17 +82,17 @@ message Properties {
     repeated string properties = 2;
 }
 
-message DeviceDropItem {
+message DeviceDataSetItem {
     string deviceID = 1;
     // key can be module.property or single property
     map<string,Properties> properties = 2;
 }
 
-message DeviceDrop {
-    repeated DeviceDropItem items = 1;
+message DeviceDataSet {
+    repeated DeviceDataSetItem items = 1;
 }
 
-message AudioDrop {
+message AudioDataSet {
     bytes audio = 1;
     int32 sampleRate = 2;
 }
@@ -84,7 +113,7 @@ message Image {
     bytes data = 4;
 }
 
-message ImageDrop {
+message ImageDataSet {
     repeated Image image = 1;
 }
 
@@ -102,31 +131,11 @@ message GeneratorRequest {
     repeated ObjectCondition objectConditions = 4;
 }
 
-message ProbeRequest {
-    repeated string objects = 1;
-}
-
-message ObjectItem {
-    string name = 1;
-    DataType datatype = 2;
-}
-
-message ObjectDefination {
-    string objectID = 1;
-    repeated ObjectItem items = 2;
-}
-
-message ProbeResponse {
-    repeated ObjectDefination objects = 1;
-}
-
 service Generator {
     // generator function
-    rpc QueryData(GeneratorRequest) returns (Drop) {}
+    rpc QueryData(GeneratorRequest) returns (DataSet) {}
     // generator function
-    rpc SubscribeData(GeneratorRequest) returns (stream Drop) {}
-    // generator function
-    rpc Probe(ProbeRequest) returns (ProbeResponse) {}
+    rpc SubscribeData(GeneratorRequest) returns (stream DataSet) {}
 }
 
 /*
@@ -139,7 +148,7 @@ Function plugin can be divided into two types: generator and processor.
 
 service Processor {
     // processor functions
-    rpc ProcessDataOnce (Drop) returns (Drop) {}
+    rpc ProcessDataOnce (DataSet) returns (DataSet) {}
     // processor functions
-    rpc ProcessDataStream (stream Drop) returns (stream Drop) {}
+    rpc ProcessDataStream (stream DataSet) returns (stream DataSet) {}
 }

@@ -319,8 +319,8 @@ service DriverPlugin {
     // connect to iotedge
     rpc Connect (ConnectRequest) returns (Response) {}
 
-    // register device service
-    rpc DriverRegister (RegisterRequest) returns (Response) {}
+    // deprecated, don't use this function
+    //rpc DriverRegister (RegisterRequest) returns (Response) {}
 
     // fetch device meta service
     rpc FetchDeviceMeta (DeviceMetaFetchRequest) returns (DeviceMetas) {}
@@ -345,4 +345,19 @@ service DriverPlugin {
     rpc ReportEvent (stream Event) returns (stream Response) {}
     // Sending report event batchly 
     rpc ReportBatchEvent (stream Events) returns (stream Response) {}
+    // register this driverplugin to iotedge
+    rpc DriverRegistration (RegistrationRequest) returns (RegistrationResponse) {}
+}
+
+message RegistrationRequest {
+    string name = 1;
+    bytes schema = 2;
+    // build in ui
+    bool buildIn = 3;
+    bytes uiParam = 4;
+}
+
+message RegistrationResponse {
+    string token = 1;    
+    string error = 2;
 }
